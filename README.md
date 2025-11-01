@@ -5,7 +5,6 @@ It provides an easy-to-use interface for authenticating with Microsoft Graph and
 
 ## Current Features
 - **Email Operations** (graph_email): Send emails with attachments, HTML content, and more
-- Sending emails (with attachments)
 
 ## General Prerequisites
 
