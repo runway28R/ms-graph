@@ -1,10 +1,11 @@
 # Microsoft Graph Toolbox
 
 A Python package that simplifies using Microsoft Graph API. 
-It provides an easy-to-use interface for authenticating with Microsoft Graph and use its capabilities.
+It provides an easy-to-use interface for authenticating with Microsoft Graph and using its capabilities.
 
 ## Current Features
 - **Email Operations** (graph_email): Send emails with attachments, HTML content, and more
+- **User Queries** (graph_users): Search and retrieve user profiles with flexible filters and projection
 
 ## General Prerequisites
 
@@ -43,23 +44,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Email priority settings
 - Logging capabilities
 
-
-#### Quick Start
-
-To send a test email, use the provided example script:
-
-```bash
-python -m examples.sending_email \
-    --client-id YOUR_CLIENT_ID \
-    --client-secret YOUR_CLIENT_SECRET \
-    --tenant-id YOUR_TENANT_ID \
-    --sender sender@yourdomain.com \
-    --to recipient@domain.com \
-    [--subject "Custom Subject"] \
-    [--content-type HTML] \
-    [--body "<h1>Custom Body</h1>"]
-```
-
 #### Example Usage
 
 ```bash
@@ -81,4 +65,37 @@ python -m examples.sending_email \
 - **Recipients**: TO, CC, and BCC fields supported
 - **Priority**: Set email importance (low, normal, high)
 - **Logging**: Built-in logging for debugging and monitoring
+
+
+### Function graph_users
+
+#### Prerequisites
+  - Required Microsoft Graph API permissions (User.Read, User.Read.All)
+
+#### Features
+
+- Search and retrieve user profiles with flexible filters and projection
+- Get user details including email, name, and profile information
+- Support for pagination
+- Filtering by attributes (e.g., email, name, department)
+- Projection of specific fields (e.g., email, name)
+
+#### Example Usage
+
+```bash
+# Search for users
+python -m examples.searching_users \
+    --client-id CLIENT_ID \
+    --client-secret CLIENT_SECRET \
+    --tenant-id TENANT_ID \
+    --search_name "John Doe" \
+    --select_data givenName,displayName
+```
+
+#### Features in Detail
+
+- **Filters**: Search by name, email, company, etc.
+- **Fields**: Retrieve specific fields (e.g., displayName,givenName,surname,country,department,jobTitle,companyName,mail,accountEnabled)
+- **Pagination**: Support for retrieving large datasets
+- **Projection**: Select specific fields to return
 
