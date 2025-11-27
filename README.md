@@ -2,10 +2,12 @@
 
 A Python package that simplifies using Microsoft Graph API. 
 It provides an easy-to-use interface for authenticating with Microsoft Graph and using its capabilities.
+The code expects a logger object with .debug/.info/.warning/.error methods.
 
 ## Current Features
 - **Email Operations** (graph_email): Send emails with attachments, HTML content, and more
 - **User Queries** (graph_users): Search and retrieve user profiles with flexible filters and projection
+- **SharePoint Operations** (graph_sharepoint): Upload files, list folder contents
 
 ## General Prerequisites
 
@@ -13,6 +15,10 @@ It provides an easy-to-use interface for authenticating with Microsoft Graph and
 - Azure AD registered application with:
   - Client ID
   - Client Secret
+- Required Microsoft Graph API permissions depending on feature:
+  - Email operations: Mail.Send
+  - User queries: User.Read, User.Read.All
+  - SharePoint operations: Sites.Read.All, Sites.ReadWrite.All, Files.ReadWrite.All
 
 ## Installation
 
@@ -99,3 +105,40 @@ python -m examples.searching_users \
 - **Pagination**: Support for retrieving large datasets
 - **Projection**: Select specific fields to return
 
+### Function graph_sharepoint
+
+#### Prerequisites
+  - Required Microsoft Graph API permissions: Sites.Read.All, Sites.ReadWrite.All, Files.ReadWrite.All
+
+#### Features
+
+- Upload local files to SharePoint document libraries
+- List contents of folders (separating files and subfolders)
+- Support for specifying folder paths within document libraries
+- Logging of folder content and upload results
+- App-only authentication using client credentials flow
+- Handles errors like missing files, invalid site URLs, or non-existing libraries
+- Optional display of folder content before uploading
+
+#### Example Usage
+
+```bash
+# Upload a file to SharePoint
+python -m examples.upload_file \
+    --client-id CLIENT_ID \
+    --client-secret CLIENT_SECRET \
+    --tenant-id TENANT_ID \
+    --site_url "contoso.sharepoint.com:/sites/TeamSite" \
+    --local_file_path "./report.xlsx" \
+    --document_library "Documents" \
+    --folder_path "Reports/2025"
+```
+
+
+#### Features in Detail
+
+- **Folders vs Files**: Automatically lists top-level folders and files in the target library
+- **Upload**: Uploads single files to specified folder, returns the SharePoint URL
+- **Folder path**: Optional; if not provided, uploads to root of library
+- **Error handling**: Returns clear messages if the file is missing or library/folder doesn’t exist
+- **Logging**: Logs debug info for folder content and upload results

@@ -1,11 +1,6 @@
 """
-Simple helper to obtain an application token via MSAL and send mail using Microsoft Graph.
+Basic code to obtain an application token via MSAL to be used with Microsoft Graph.
 
-This module wraps:
-- msal.ConfidentialClientApplication to get a client credentials token
-- Microsoft Graph v1.0 /users/{sender}/sendMail to send messages
-
-Note: The original code expects a logger object with .debug/.info/.warning/.error methods.
 """
 
 import msal

@@ -37,7 +37,7 @@ def get_users(gph_object, select_data=None, search_name=None, search_title=None,
         if search_email:
             server_filters.append(f"startswith(mail,'{esc(search_email)}')")
         if search_alias:
-            # try matching common alias forms
+            # Try matching common alias forms
             alias_escaped = esc(search_alias)
             server_filters.append(
                 f"(startswith(userPrincipalName,'{alias_escaped}') or startswith(mailNickname,'{alias_escaped}') "
@@ -50,7 +50,7 @@ def get_users(gph_object, select_data=None, search_name=None, search_title=None,
             params["$filter"] = " and ".join(server_filters)
         if select_data:
             params["$select"] = select_data
-        # include count if desired (note: some endpoints require ConsistencyLevel header for $count)
+        # Include count if desired (note: some endpoints require ConsistencyLevel header for $count)
         params["$count"] = "true"
 
         headers = {"Authorization": f"Bearer {gph_object.access_token}"}
@@ -90,6 +90,6 @@ def get_users(gph_object, select_data=None, search_name=None, search_title=None,
         try:
             gph_object.logger.error(f"Exception occurred while searching for users: {e}")
         except Exception:
-            # fallback if logger not available
+            # Fallback if logger not available
             pass
         return None
