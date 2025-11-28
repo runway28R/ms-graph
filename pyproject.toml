@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ms-graph-wrapper"
+version = "0.0.7"
+description = "A lightweight Python wrapper around Microsoft Graph API for sending email, working with users, and SharePoint operations."
+authors = [
+    { name="Your Name", email="you@example.com" }
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+
+requires-python = ">=3.12"
+
+# Add your dependencies here
+dependencies = [
+    "requests>=2.31.0",
+    "msal>=1.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/runway28R/ms-graph"
+Source = "https://github.com/runway28R/ms-graph"
+Issues = "https://github.com/runway28R/ms-graph/issues"
+
+[tool.setuptools]
+package-dir = {"" = "ms_graph"}
+
+[tool.setuptools.packages.find]
+where = ["ms_graph"]
