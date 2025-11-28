@@ -4,8 +4,16 @@ import os
 import mimetypes
 
 
-def send_email(gph_object, subject, content_type, body, sender, to_field, cc_field=None, bcc_field=None, 
-                priority="normal", attachments=None):
+def send_email(gph_object, 
+               subject, 
+               content_type, 
+               body, 
+               sender, 
+               to_field, 
+               cc_field=None, 
+               bcc_field=None, 
+               priority="Normal", 
+               attachments=None):
     """
     Send an email using Microsoft Graph on behalf of `sender`.
 
@@ -15,7 +23,7 @@ def send_email(gph_object, subject, content_type, body, sender, to_field, cc_fie
         content_type: one of 'text', 'html', 'text/plain', 'text/html', etc.
         body: email body string.
         to_field, cc_field, bcc_field: comma-separated recipient strings (e.g. "a@x.com, b@y.com").
-        priority: message importance, e.g. "low", "normal", "high".
+        priority: message importance, e.g. "Low", "Normal", "High".
         attachments: optional list of attachment descriptors. Each descriptor may be:
             - {'path': 'C:\\full\\path\\file.pdf', 'name': 'file.pdf', 'content_type': 'application/pdf', 'inline': False}
             - {'content_bytes': b'...', 'name': 'image.png', 'content_type': 'image/png', 'inline': True, 'content_id': 'img1'}
@@ -32,64 +40,6 @@ def send_email(gph_object, subject, content_type, body, sender, to_field, cc_fie
             gph_object.logger.error("Invalid Access Token, email cannot be sent!")
             return 2
 
-        # Convert a comma-separated string of addresses into the Graph recipient JSON format.
-        def parse_recipients(field):
-            if not field:
-                return []
-            return [{"emailAddress": {"address": addr.strip()}} for addr in field.split(",") if addr.strip()]
-
-        # Build Graph attachment payloads from descriptors
-        def build_attachment(descriptor):
-            """
-            Accepts either:
-                - {'path': 'C:\\file', ...}
-                - {'content_bytes': b'...', ...}
-            Returns a dict suitable for Graph message attachments.
-            """
-            try:
-                # Determine name
-                name = descriptor.get("name")
-                content_type_guess = None
-
-                # Load bytes from file path if provided
-                if "path" in descriptor and descriptor["path"]:
-                    path = descriptor["path"]
-                    with open(path, "rb") as f:
-                        data = f.read()
-                    if not name:
-                        name = os.path.basename(path)
-                    content_type_guess = mimetypes.guess_type(path)[0]
-                elif "content_bytes" in descriptor and descriptor["content_bytes"] is not None:
-                    data = descriptor["content_bytes"]
-                    if isinstance(data, str):
-                        data = data.encode("utf-8")
-                else:
-                    gph_object.logger.warning(f"build_attachment failed: descriptor missing 'path' or 'content_bytes': {descriptor}")
-
-                # Determine contentType
-                content_type = descriptor.get("content_type") or content_type_guess or "application/octet-stream"
-
-                # Base64 encode content
-                content_bytes_b64 = base64.b64encode(data).decode("utf-8")
-
-                # Build attachment object (fileAttachment)
-                attachment = {
-                    "@odata.type": "#microsoft.graph.fileAttachment",
-                    "name": name or "attachment",
-                    "contentType": content_type,
-                    "contentBytes": content_bytes_b64
-                }
-
-                # Inline settings for images
-                if descriptor.get("inline"):
-                    attachment["isInline"] = True
-                    # contentId is used as cid reference in HTML body: <img src="cid:contentId">
-                    attachment["contentId"] = descriptor.get("content_id") or (name or "inline")
-                return attachment
-            except Exception as e:
-                gph_object.logger.error(f"build_attachment: failed for descriptor {descriptor}: {e}")
-                return None
-            
         # Parse recipient fields into Graph-friendly lists
         to_recipients = parse_recipients(to_field)
         cc_recipients = parse_recipients(cc_field)
@@ -106,7 +56,7 @@ def send_email(gph_object, subject, content_type, body, sender, to_field, cc_fie
             # Process all attachments in one pass
             attachments_payload = [
                 att for desc in attachments 
-                if (att := build_attachment(desc)) is not None
+                if (att := build_attachment(descriptor=desc, logger=gph_object.logger)) is not None
             ]
             
             # Check for inline attachments
@@ -159,3 +109,65 @@ def send_email(gph_object, subject, content_type, body, sender, to_field, cc_fie
         # Any unexpected exception during send is logged
         gph_object.logger.error(f"Sending Failed: {e}")
         return 1
+
+
+# Convert a comma-separated string of addresses into the Graph recipient JSON format.
+def parse_recipients(field):
+    if not field:
+        return []
+    return [{"emailAddress": {"address": addr.strip()}} for addr in field.split(",") if addr.strip()]
+
+
+# Build Graph attachment payloads from descriptors
+def build_attachment(descriptor, logger):
+    """
+    Accepts either:
+        - {'path': 'C:\\file', ...}
+        - {'content_bytes': b'...', ...}
+    Returns a dict suitable for Graph message attachments.
+    """
+    try:
+        # Basic check
+        if "path" not in descriptor and "content_bytes" not in descriptor:
+            logger.error(f"build_attachment failed: Descriptor missing 'path' or 'content_bytes': {descriptor}")
+            return None
+        # Determine name
+        name = descriptor.get("name")
+        content_type_guess = None
+
+        # Load bytes from file path if provided
+        if "path" in descriptor and descriptor["path"]:
+            path = descriptor["path"]
+            with open(path, "rb") as f:
+                data = f.read()
+            if not name:
+                name = os.path.basename(path)
+            content_type_guess = mimetypes.guess_type(path)[0]
+        elif "content_bytes" in descriptor and descriptor["content_bytes"] is not None:
+            data = descriptor["content_bytes"]
+            if isinstance(data, str):
+                data = data.encode("utf-8")
+
+        # Determine contentType
+        content_type = descriptor.get("content_type") or content_type_guess or "application/octet-stream"
+
+        # Base64 encode content
+        content_bytes_b64 = base64.b64encode(data).decode("utf-8")
+
+        # Build attachment object (fileAttachment)
+        attachment = {
+            "@odata.type": "#microsoft.graph.fileAttachment",
+            "name": name or "attachment",
+            "contentType": content_type,
+            "contentBytes": content_bytes_b64
+        }
+
+        # Inline settings for images
+        if descriptor.get("inline"):
+            attachment["isInline"] = True
+            # contentId is used as cid reference in HTML body: <img src="cid:contentId">
+            attachment["contentId"] = descriptor.get("content_id") or (name or "inline")
+        return attachment
+    except Exception as e:
+        logger.error(f"build_attachment: failed for descriptor {descriptor}: {e}")
+        return None

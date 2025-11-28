@@ -34,7 +34,7 @@ class graph_sharepoint:
             return None
 
 
-    def get_folder_content(self, site_id, drive_id):
+    def get_folder_content(self, site_id:str, drive_id:str):
         # Get the contents of a folder
         try:
             folder_url = f'https://graph.microsoft.com/v1.0/sites/{site_id}/drives/{drive_id}/root/children'
@@ -64,7 +64,7 @@ class graph_sharepoint:
             print(f)
 
 
-    def upload_file_graph(self, site_id, drive_id, folder_path, local_file_path):
+    def upload_file_graph(self, site_id, drive_id:str, folder_path:str, local_file_path:str):
         """
         Uploads a file to a SharePoint folder using Microsoft Graph API.
 

@@ -1,8 +1,14 @@
 import requests
 
 
-def get_users(gph_object, select_data=None, search_name=None, search_title=None, search_email=None, search_alias=None,
-              search_company=None):
+def get_users(gph_object, 
+              select_data: str | None = None,  
+              search_name: str | None = None,
+              search_title: str | None = None,
+              search_email: str | None = None,
+              search_alias: str | None = None,
+              search_company: str | None = None
+              ) -> list[dict] | None:
     """
     Search for users in Microsoft Graph based on provided criteria.
 
@@ -14,7 +20,7 @@ def get_users(gph_object, select_data=None, search_name=None, search_title=None,
 
     Args:
         gph_object: An initialized ms_graph object with valid access_token and logger.
-        select_data: Comma-separated list of properties to return (e.g. "displayName,mail,jobTitle").
+        select_data: Comma-separated string or a list of properties to return (e.g. "displayName,mail,jobTitle").
         search_name: Filter users by displayName (partial, startswith).
         search_title: Filter users by jobTitle (partial, startswith).
         search_email: Filter users by mail (partial, startswith).
@@ -27,6 +33,9 @@ def get_users(gph_object, select_data=None, search_name=None, search_title=None,
     try:
         def esc(val: str) -> str:
             return val.replace("'", "''")
+
+        if not any([search_name, search_title, search_email, search_alias, search_company]):
+            gph_object.logger.warning("No filters provided; retrieving all users may be slow in large organizations.")
 
         # Build server-side filters (exclude companyName to avoid unsupported-filter errors)
         server_filters = []
@@ -49,11 +58,15 @@ def get_users(gph_object, select_data=None, search_name=None, search_title=None,
         if server_filters:
             params["$filter"] = " and ".join(server_filters)
         if select_data:
-            params["$select"] = select_data
+            if isinstance(select_data, list):
+                params["$select"] = ",".join(select_data)
+            else:
+                params["$select"] = select_data
         # Include count if desired (note: some endpoints require ConsistencyLevel header for $count)
         params["$count"] = "true"
 
-        headers = {"Authorization": f"Bearer {gph_object.access_token}"}
+        headers = {"Authorization": f"Bearer {gph_object.access_token}",
+                "ConsistencyLevel": "eventual"}
         users_list = []
 
         # Use params on first request; if @odata.nextLink is returned, follow it directly (it already contains params)
@@ -82,7 +95,8 @@ def get_users(gph_object, select_data=None, search_name=None, search_title=None,
         if search_company:
             sc = search_company.lower()
             users_list = [u for u in users_list if sc in (u.get("companyName") or "").lower()]
-
+        
+        gph_object.logger.debug(f"Retrieved {len(users_list)} users")
         return users_list
 
     except Exception as e:

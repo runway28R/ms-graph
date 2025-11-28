@@ -2,7 +2,6 @@
 Basic code to obtain an application token via MSAL to be used with Microsoft Graph.
 
 """
-
 import msal
 
 
@@ -18,8 +17,13 @@ class ms_graph:
         tenant_id: Azure AD tenant identifier (GUID) or tenant domain used to build the authority URL
     """
 
-    def __init__(self, client_id, client_secret, tenant_id, logger):
-        # Store logger and sender for later use
+    def __init__(self, 
+                 client_id, 
+                 client_secret, 
+                 tenant_id, 
+                 logger):
+        
+        # Set logger and access token placeholder
         self.logger = logger
         self.access_token = None
 
