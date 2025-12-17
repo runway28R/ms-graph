@@ -7,7 +7,7 @@ name = "ms-graph-wrapper"
 version = "0.0.7"
 description = "A lightweight Python wrapper around Microsoft Graph API for sending email, working with users, and SharePoint operations."
 authors = [
-    { name="Your Name", email="you@example.com" }
+    { name="runway28R" }
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
