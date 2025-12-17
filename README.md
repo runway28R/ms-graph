@@ -24,7 +24,7 @@ The code expects a logger object with .debug/.info/.warning/.error methods.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ms-graph.git
+git clone https://github.com/runway28R/ms-graph.git
 cd ms-graph
 
 # Install required packages
